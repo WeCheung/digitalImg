@@ -1,17 +1,14 @@
 import React, {Component} from 'react';
 import './index.scss';
+import Main from "./base/main";
+import BtnGroup from "./base/btnGroup";
 
 class MainPage extends Component {
   render() {
     return (
         <div id={'main-page'}>
-          <div className="main-box">
-            <div className="btn-group1">
-              
-            </div>
-            <canvas id="my-canvas"/>
-          </div>
-
+          <Main />
+          <BtnGroup />
         </div>
     );
   }

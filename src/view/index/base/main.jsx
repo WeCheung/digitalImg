@@ -1,7 +1,9 @@
-import React, { Component } from 'react';
-import { Button, Upload, message } from "antd";
+import React, {Component} from 'react';
+import {Button, Upload, message} from "antd";
+import { connect } from 'react-redux';
+import {GET_IMG} from "../../../constants";
 
-class Main extends Component{
+class Main extends Component {
   constructor(props) {
     super(props);
     // this.handleClick = this.handleClick.bind(this); // 处理上传方法
@@ -10,7 +12,6 @@ class Main extends Component{
     this.state = {
       img: ''
     };
-
   }
 
   render() {
@@ -28,7 +29,7 @@ class Main extends Component{
         <div className="main-box">
           <div className="btn-group1">
             <Upload {...uploadProps}>
-              <Button children={'上传图片'} type={"primary"} />
+              <Button children={'上传图片'} type={"primary"}/>
             </Upload>
             <Button children={'保存图片'} type={"primary"}/>
           </div>
@@ -46,7 +47,7 @@ class Main extends Component{
     reader.onloadend = (e) => {
       // console.log(e.target.result);// 打印图片的base64
       this.putImage2Canvas(e.target.result);
-      this.setState(()=>({
+      this.setState(() => ({
         img: e.target.result
       }))
       if (e && e.target && e.target.result) {
@@ -70,6 +71,7 @@ class Main extends Component{
   }
 
   putImage2Canvas(imgSrc) {
+    const { getImgArr } = this.props;
     const img = new Image();
     img.src = imgSrc
     img.onload = () => {
@@ -77,12 +79,31 @@ class Main extends Component{
       this.myCanvas.current.height = img.height;
       const context = this.myCanvas.current.getContext('2d');
       context.drawImage(img, 0, 0);
-      const imgData = context.getImageData(0, 0, img.width, img.height);
-      // 处理imgData
-      console.log(imgData);
+      const imgData = context.getImageData(0, 0, img.width, img.height).data;  // 获得 RGBA 的像素对象矩阵
+      // 处理imgData  去除 A 通道
+      let imgArr = [];
+      for (let i = 0; i < imgData.length; i += 4) {
+        imgArr.push(imgData[i], imgData[i + 1], imgData[i + 2])
+      }
+      getImgArr(imgArr);
+      console.log(imgArr);
     }
   }
 }
 
+const mapStateToProps = state => ({
+  imgArr: state.imgArr
+})
 
-export default Main;
+const mapDispatchToProps = dispatch => ({
+  // 改变仓库中的像素矩阵
+  getImgArr(imgArr){
+    const action = {
+      type: GET_IMG,
+      imgArr
+    }
+    dispatch(action);
+  }
+})
+
+export default connect(mapStateToProps, mapDispatchToProps)(Main);

@@ -7,6 +7,7 @@ function gray(data) {
         const value = Math.floor((data[i] + data[i + 1] + data[i + 1]) / 3);
         data[i] = data[i + 1] = data[i + 2] = value;
     }
+    console.log(typeof data[0]);
     return data;
 }
 export { gray };

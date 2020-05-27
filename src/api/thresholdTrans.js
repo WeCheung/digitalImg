@@ -6,15 +6,18 @@
  * @param bthre 阈值
  */
 function thresholdTrans(data, bthre) {
+    let resultArr = [];
     for (let i = 0, len = data.length; i < len; i += 4) {
         // 针对RGB三个进行转换
         for (let j = 0; j < 3; j++) {
             if (data[i + j] < bthre) {
-                data[i + j] = 0;
+                resultArr[i + j] = 0;
             } else {
-                data[i + j] = 255;
+                resultArr[i + j] = 255;
             }
         }
+        resultArr[i + 3] = 255;
     }
+    return resultArr;
 }
 export { thresholdTrans };

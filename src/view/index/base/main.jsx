@@ -1,17 +1,45 @@
 import React, {Component} from 'react';
 import {Button, Upload, message} from "antd";
 import { connect } from 'react-redux';
-import {GET_IMG} from "../../../constants";
+import {GET_IMG, GET_IMG_SIZE, GET_MEDIAN_FILTER, GET_THRESHOLD_ARR, GET_EDGE_DETECTION_ARR} from "../../../constants";
+import {getMedianFilter} from "./btnFunctions";
 
 class Main extends Component {
   constructor(props) {
     super(props);
     // this.handleClick = this.handleClick.bind(this); // 处理上传方法
     this.putImage2Canvas = this.putImage2Canvas.bind(this); // 将上传图片投影到 canvas 中
+    this.getMedianFilter = getMedianFilter.bind(this);
     this.myCanvas = React.createRef();
-    this.state = {
-      img: ''
-    };
+  }
+
+  componentDidUpdate(prevProps, prevState, snapshot) {
+    const {renderType} = this.props;
+    switch (renderType) {
+      case GET_MEDIAN_FILTER:
+        this.renderData(GET_MEDIAN_FILTER);
+        return;
+      case GET_THRESHOLD_ARR:
+        this.renderData(GET_THRESHOLD_ARR);
+        return;
+      case GET_EDGE_DETECTION_ARR:
+        this.renderData(GET_EDGE_DETECTION_ARR);
+        return;
+      default:
+        return;
+    }
+  }
+
+  componentDidMount() {
+    const {getImgSize} = this.props;
+    const myCanvas = this.myCanvas.current;
+    const imgSize = {
+      width: parseInt(getComputedStyle(myCanvas).width),
+      height: parseInt(getComputedStyle(myCanvas).height),
+      originWidth: myCanvas.width,
+      originHeight: myCanvas.height
+    }
+    getImgSize(imgSize);
   }
 
   render() {
@@ -69,9 +97,8 @@ class Main extends Component {
     return isJpgOrPng && isLt2M;
     // return false;
   }
-
   putImage2Canvas(imgSrc) {
-    const { getImgArr } = this.props;
+    const { getImgArr, imgSize } = this.props;
     const img = new Image();
     img.src = imgSrc
     img.onload = () => {
@@ -79,20 +106,53 @@ class Main extends Component {
       this.myCanvas.current.height = img.height;
       const context = this.myCanvas.current.getContext('2d');
       context.drawImage(img, 0, 0);
-      const imgData = context.getImageData(0, 0, img.width, img.height).data;  // 获得 RGBA 的像素对象矩阵
+      // const imgData = context.getImageData(0, 0, img.width, img.height).data;  // 获得 RGBA 的像素对象矩阵
+      const imgData = context.getImageData(0, 0, imgSize.width, imgSize.height).data;  // 获得 RGBA 的像素对象矩阵
+      console.log(imgData);
       // 处理imgData  去除 A 通道
       let imgArr = [];
       for (let i = 0; i < imgData.length; i += 4) {
         imgArr.push(imgData[i], imgData[i + 1], imgData[i + 2])
       }
       getImgArr(imgArr);
-      console.log(imgArr);
+      // console.log(imgArr);
+    }
+  }
+
+  // 渲染函数
+  renderData(type) {
+    const myCanvas = this.myCanvas.current;
+    const {thresholdArr, medianFilterArr, edgeDetectionArr, imgSize} = this.props;
+    const context = myCanvas.getContext('2d');
+    const imgData = context.createImageData(imgSize.width, imgSize.height);
+    if( type === GET_MEDIAN_FILTER && medianFilterArr.length ){ // 中值滤波渲染
+      medianFilterArr.forEach((item, index) => {
+        imgData.data[index] = medianFilterArr[index];
+      });
+      context.putImageData(imgData, 0, 0, 0, 0, imgSize.width, imgSize.height);
+    } else if( type === GET_THRESHOLD_ARR && thresholdArr.length ) {  // 二值图像渲染
+      console.log(thresholdArr);
+      thresholdArr.forEach((item, index) => {
+        imgData.data[index] = thresholdArr[index];
+      });
+      context.putImageData(imgData, 0, 0, 0, 0, imgSize.width, imgSize.height);
+    } else if( type === GET_EDGE_DETECTION_ARR && edgeDetectionArr.length ){
+      console.log(edgeDetectionArr);
+      edgeDetectionArr.forEach((item, index) => {
+        imgData.data[index] = thresholdArr[index];
+      });
+      context.putImageData(imgData, 0, 0, 0, 0, imgSize.width, imgSize.height);
     }
   }
 }
 
 const mapStateToProps = state => ({
-  imgArr: state.imgArr
+  imgArr: state.imgArr,
+  imgSize: state.imgSize,
+  medianFilterArr: state.medianFilterArr,
+  thresholdArr: state.thresholdArr,
+  edgeDetectionArr: state.edgeDetectionArr,
+  renderType: state.renderType
 })
 
 const mapDispatchToProps = dispatch => ({
@@ -101,6 +161,21 @@ const mapDispatchToProps = dispatch => ({
     const action = {
       type: GET_IMG,
       imgArr
+    }
+    dispatch(action);
+  },
+  // 随时测量图片大小
+  getImgSize(sizeObj){
+    const action = {
+      type: GET_IMG_SIZE,
+      imgSize: sizeObj
+    }
+    dispatch(action);
+  },
+  changeMedianFilter(medianFilterArr){
+    const action = {
+      type: GET_MEDIAN_FILTER,
+      medianFilterArr
     }
     dispatch(action);
   }

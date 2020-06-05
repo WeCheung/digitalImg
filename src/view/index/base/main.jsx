@@ -1,7 +1,16 @@
 import React, {Component} from 'react';
 import {Button, Upload, message} from "antd";
-import { connect } from 'react-redux';
-import {GET_IMG, GET_IMG_SIZE, GET_MEDIAN_FILTER, GET_THRESHOLD_ARR, GET_EDGE_DETECTION_ARR} from "../../../constants";
+import {connect} from 'react-redux';
+import {
+  GET_IMG,
+  GET_IMG_SIZE,
+  GET_MEDIAN_FILTER,
+  GET_THRESHOLD_ARR,
+  GET_EDGE_DETECTION_ARR,
+  GET_GRAD_SHARP_ARR,
+  GET_INVERT_ARR,
+  GET_EQUALIZE_ARR
+} from "../../../constants";
 import {getMedianFilter} from "./btnFunctions";
 
 class Main extends Component {
@@ -11,6 +20,9 @@ class Main extends Component {
     this.putImage2Canvas = this.putImage2Canvas.bind(this); // 将上传图片投影到 canvas 中
     this.getMedianFilter = getMedianFilter.bind(this);
     this.myCanvas = React.createRef();
+    this.state = {
+      count: 1
+    }
   }
 
   componentDidUpdate(prevProps, prevState, snapshot) {
@@ -24,6 +36,15 @@ class Main extends Component {
         return;
       case GET_EDGE_DETECTION_ARR:
         this.renderData(GET_EDGE_DETECTION_ARR);
+        return;
+      case GET_GRAD_SHARP_ARR:
+        this.renderData(GET_GRAD_SHARP_ARR);
+        return;
+      case GET_INVERT_ARR:
+        this.renderData(GET_INVERT_ARR);
+        return;
+      case GET_EQUALIZE_ARR:
+        this.renderData(GET_EQUALIZE_ARR);
         return;
       default:
         return;
@@ -59,11 +80,34 @@ class Main extends Component {
             <Upload {...uploadProps}>
               <Button children={'上传图片'} type={"primary"}/>
             </Upload>
-            <Button children={'保存图片'} type={"primary"}/>
+            <Button children={'保存图片'} type={"primary"} onClick={() => {
+              this.saveImage();
+            }}/>
           </div>
           <canvas ref={this.myCanvas} id={'my-canvas'}/>
         </div>
     )
+  }
+
+  // 保存图片
+  saveImage = () => {
+    const myCanvas = document.getElementById('my-canvas');
+    let count = this.state.count;
+    let base64 = myCanvas.toDataURL('image/png');
+    base64 = base64.replace('image/png', 'image/octest-stream');
+
+    const event = document.createEvent('MouseEvents');
+    event.initEvent('click', true, true);
+
+    const link = document.createElement('a');
+    link.href = base64;
+    link.download = `img${count}.png`
+    link.dispatchEvent(event);
+
+    count++;
+    this.setState(() => ({
+      count
+    }))
   }
 
   // 上传图片
@@ -97,8 +141,9 @@ class Main extends Component {
     return isJpgOrPng && isLt2M;
     // return false;
   }
+
   putImage2Canvas(imgSrc) {
-    const { getImgArr, imgSize } = this.props;
+    const {getImgArr, imgSize} = this.props;
     const img = new Image();
     img.src = imgSrc
     img.onload = () => {
@@ -112,7 +157,7 @@ class Main extends Component {
       // 处理imgData  去除 A 通道
       let imgArr = [];
       for (let i = 0; i < imgData.length; i += 4) {
-        imgArr.push(imgData[i], imgData[i + 1], imgData[i + 2])
+        imgArr.push(imgData[i], imgData[i + 1], imgData[i + 2]);
       }
       getImgArr(imgArr);
       // console.log(imgArr);
@@ -122,26 +167,50 @@ class Main extends Component {
   // 渲染函数
   renderData(type) {
     const myCanvas = this.myCanvas.current;
-    const {thresholdArr, medianFilterArr, edgeDetectionArr, imgSize} = this.props;
+    const {
+      thresholdArr,
+      medianFilterArr,
+      edgeDetectionArr,
+      imgSize,
+      gradSharpArr,
+      invertArr,
+      equalizeArr
+    } = this.props;
     const context = myCanvas.getContext('2d');
     const imgData = context.createImageData(imgSize.width, imgSize.height);
-    if( type === GET_MEDIAN_FILTER && medianFilterArr.length ){ // 中值滤波渲染
+    if (type === GET_MEDIAN_FILTER && medianFilterArr.length) { // 中值滤波渲染
       medianFilterArr.forEach((item, index) => {
         imgData.data[index] = medianFilterArr[index];
       });
       context.putImageData(imgData, 0, 0, 0, 0, imgSize.width, imgSize.height);
-    } else if( type === GET_THRESHOLD_ARR && thresholdArr.length ) {  // 二值图像渲染
+    } else if (type === GET_THRESHOLD_ARR && thresholdArr.length) {  // 二值图像渲染
       console.log(thresholdArr);
       thresholdArr.forEach((item, index) => {
         imgData.data[index] = thresholdArr[index];
       });
       context.putImageData(imgData, 0, 0, 0, 0, imgSize.width, imgSize.height);
-    } else if( type === GET_EDGE_DETECTION_ARR && edgeDetectionArr.length ){
+    } else if (type === GET_EDGE_DETECTION_ARR && edgeDetectionArr.length) {  // 边缘检测
       console.log(edgeDetectionArr);
       edgeDetectionArr.forEach((item, index) => {
         imgData.data[index] = thresholdArr[index];
       });
       context.putImageData(imgData, 0, 0, 0, 0, imgSize.width, imgSize.height);
+    } else if (type === GET_GRAD_SHARP_ARR && gradSharpArr.length) {  // 灰度锐化
+      console.log(gradSharpArr);
+      gradSharpArr.forEach((item, index) => {
+        imgData.data[index] = gradSharpArr[index];
+      });
+      context.putImageData(imgData, 0, 0, 0, 0, imgSize.width, imgSize.height);
+    } else if (type === GET_INVERT_ARR && invertArr.length) { // 反色处理
+      console.log(invertArr);
+      invertArr.forEach((item, index) => {
+        imgData.data[index] = invertArr[index];
+      });
+    } else if (type === GET_EQUALIZE_ARR && equalizeArr.length) {
+      console.log(equalizeArr);
+      equalizeArr.forEach((item, index) => {
+        imgData.data[index] = equalizeArr[index];
+      });
     }
   }
 }
@@ -149,15 +218,19 @@ class Main extends Component {
 const mapStateToProps = state => ({
   imgArr: state.imgArr,
   imgSize: state.imgSize,
+  grayArr: state.grayArr,
   medianFilterArr: state.medianFilterArr,
   thresholdArr: state.thresholdArr,
   edgeDetectionArr: state.edgeDetectionArr,
-  renderType: state.renderType
-})
+  renderType: state.renderType,
+  gradSharpArr: state.gradSharpArr,
+  invertArr: state.invertArr,
+  equalizeArr: state.equalizeArr
+});
 
 const mapDispatchToProps = dispatch => ({
   // 改变仓库中的像素矩阵
-  getImgArr(imgArr){
+  getImgArr(imgArr) {
     const action = {
       type: GET_IMG,
       imgArr
@@ -165,20 +238,20 @@ const mapDispatchToProps = dispatch => ({
     dispatch(action);
   },
   // 随时测量图片大小
-  getImgSize(sizeObj){
+  getImgSize(sizeObj) {
     const action = {
       type: GET_IMG_SIZE,
       imgSize: sizeObj
     }
     dispatch(action);
   },
-  changeMedianFilter(medianFilterArr){
+  changeMedianFilter(medianFilterArr) {
     const action = {
       type: GET_MEDIAN_FILTER,
       medianFilterArr
     }
     dispatch(action);
   }
-})
+});
 
 export default connect(mapStateToProps, mapDispatchToProps)(Main);

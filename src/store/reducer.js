@@ -4,15 +4,21 @@ import {
   GET_MEDIAN_FILTER,
   GET_IMG_SIZE,
   GET_THRESHOLD_ARR,
-  GET_EDGE_DETECTION_ARR
+  GET_EDGE_DETECTION_ARR,
+  GET_GRAD_SHARP_ARR,
+  GET_INVERT_ARR,
+  GET_EQUALIZE_ARR
 } from "../constants";
 
 const initState = {
   imgArr: [],
   grayArr: [],
+  gradSharpArr: [],
+  equalizeArr: [],
   medianFilterArr: [],
   thresholdArr: [],
   edgeDetectionArr: [],
+  invertArr: [],
   imgSize: {},
   renderType: ''
 };
@@ -24,6 +30,7 @@ export default (state = initState, action) => {
       newState.imgArr = action.imgArr;
       return newState;
     case GET_GRAY_ARR:
+      newState.renderType = GET_GRAY_ARR;
       newState.grayArr = action.grayArr;
       return newState;
     case GET_MEDIAN_FILTER:
@@ -40,6 +47,18 @@ export default (state = initState, action) => {
     case GET_EDGE_DETECTION_ARR:
       newState.renderType = GET_EDGE_DETECTION_ARR;
       newState.edgeDetectionArr = action.edgeDetectionArr;
+      return newState;
+    case GET_GRAD_SHARP_ARR:
+      newState.renderType = GET_GRAD_SHARP_ARR;
+      newState.gradSharpArr = action.gradSharpArr;
+      return newState;
+    case GET_INVERT_ARR:
+      newState.renderType = GET_INVERT_ARR;
+      newState.invertArr = action.invertArr;
+      return newState;
+    case GET_EQUALIZE_ARR:
+      newState.renderType = GET_EQUALIZE_ARR;
+      newState.equalizeArr = action.equalizeArr;
       return newState;
     default:
       return newState;

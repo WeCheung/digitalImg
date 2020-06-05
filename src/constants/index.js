@@ -4,3 +4,6 @@ export const GET_MEDIAN_FILTER = 'get_median_filter';
 export const GET_IMG_SIZE = 'get_img_size';
 export const GET_THRESHOLD_ARR = 'get_threshold_arr';
 export const GET_EDGE_DETECTION_ARR = 'get_edge_detection_arr';
+export const GET_GRAD_SHARP_ARR = 'get_grad_sharp_arr';
+export const GET_INVERT_ARR = 'get_invert_arr';
+export const GET_EQUALIZE_ARR = 'get_equalize_arr';

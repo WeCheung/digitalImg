@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {Button} from "antd";
+import {Button, message} from "antd";
 import {connect} from 'react-redux';
 import {
   GET_GRAY_ARR,
@@ -17,7 +17,8 @@ import {
   getEdgeDetection,
   getGradSharp,
   getInvertArr,
-  getEqualizeArr
+  getEqualizeArr,
+  counter
 } from "./btnFunctions";
 
 class BtnGroup extends Component {
@@ -65,7 +66,7 @@ class BtnGroup extends Component {
               this.getEdgeDetection(thresholdArr, imgSize.width, imgSize.height, getEdgeDetectionArr);
             }}/>
             <Button children={'统计'} type={'primary'} onClick={() => {
-              alert('统计个毛~');
+              message.success(counter(thresholdArr, imgSize.width, imgSize.height));
             }}/>
           </div>
         </div>

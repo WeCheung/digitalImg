@@ -1,3 +1,4 @@
-该项目通过 react-create-app 创建
+该项目通过 create-react-app 创建
+项目的启动和其他操作参考 create-react-app 的说明文档
 
 该项目创建的目的是为了应付作者的数字图像处理专业课的课程设计，现已停止维护
